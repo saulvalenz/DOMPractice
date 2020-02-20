@@ -28,3 +28,12 @@
 	grid-template-rows: 25% 25% 25% 25%;
 	background-color: gray;
 }
+
+#dialog{
+	position: absolute;
+	width: 50%;
+	height: 40%;
+	background-color: white;
+	display: none;
+	margin: auto;
+}

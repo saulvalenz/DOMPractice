@@ -1,130 +1,157 @@
-//1. obtener los elementos y guardarlos en variables
-var containerCell=document.getElementById("container-cell");
-var containerPiece=document.getElementById("container-piece");
-var selectedPiece=null;
+//Obteniendo elementos de HTML.
+var cellContainer = document.getElementById("container-cell");
+var pieceContainer = document.getElementById("container-piece");
+var dialogElement=document.getElementById("dialog");
+var selectedPiece = null;
+document.onkeypress=keyPress;
+
 createBoard();
 createPieces();
 
-//2. crear las celdas donde ira la pieza de lado izquierdo.
-function createCell(width, height, position){
-	var cellElement=document.createElement("div"); 
-	cellElement.style.width=width;
-	cellElement.style.height=height;
-	cellElement.style.border="1px solid black";
-	cellElement.style.backgroundColor= "#891252";
-	cellElement.onclick=clickCell;
-	cellElement.dataset.position=position;
-	cellElement.dataset.fill=false;
-	return cellElement;
+//Creating cells
+function createBoard() {
+    var width = cellContainer.offsetWidth;
+    var height = cellContainer.offsetHeight;
+
+    //dividir grid en 4 x 4
+    width = width / 4;
+    height = height / 4;
+
+    for(var i = 0;i < 16;i++) {
+        let cellElement = createCell(width, height, i);
+        addCell(cellElement);
+    }
 }
 
-//3. crear las celdas donde estaran contenidas de lado derecho.
-function createBoard(){
-	var width=containerCell.offsetWidth;//toma el ancho de los componentes, sin su margen
-	var height=containerCell.offsetHeight;
-	width /= 4;
-	height /= 4;
-	for(var i=0; i<16; i++){
-		let cellElement=createCell(width, height, i);
-		addCell(cellElement);
-	}
+function createCell(width, height, position) {
+    cellElement = document.createElement("div");
+    cellElement.style.width = width;
+    cellElement.style.height = height;
+    cellElement.style.border = "1px solid black";
+    cellElement.style.backgroungColor = "yellow";
+    cellElement.onclick = clickCell;
+    cellElement.dataset.position=position;
+
+    return cellElement;
 }
 
-//4. crear el contorno en cuadrito de lado derecho. 
-function createPiece(width, height, piece){
-	var cellElement=document.createElement("div");//se crea un div para despues meter algo en ese div en el html
-	var pieceElement=document.createElement("img");
-	//configurando la celda para la pieza detro del contenedor de piezas(lado derecho).
-	cellElement.style.width=width;
-	cellElement.style.height=height;
-	//configurando la pieza dentro del contenedor de piezas(lado derecho).
-	pieceElement.width=width;
-	pieceElement.height=height;
-	pieceElement.border="1px solid black";
-	pieceElement.src=piece.image;
-	pieceElement.dataset.position=piece.position;
-	pieceElement.dataset.moved=false;
-	pieceElement.onclick=clickPiece;
-	//para mandar la pieza a la celda - agregar elementos al documento.
-	cellElement.appendChild(pieceElement);//esta linea logra que funcione esta madre.
-	return cellElement;
+function addCell(element) {
+    cellContainer.appendChild(element);
 }
 
-//5. cargar la imagen en un cuadrito
+//Creating pieces
 function createPieces(){
-	var width=containerPiece.offsetWidth;
-	var height=containerPiece.offsetHeight;
-	width /= 4;
-	height /= 4;
-	var pieces = generatePieceData();
-	for(let i=0; i<16; i++){
-		let pieceElement = createPiece(width, height, pieces[i]);
-		addPiece(pieceElement);
-	}
+    var width = pieceContainer.offsetWidth;
+    var height = pieceContainer.offsetHeight;
+    width /= 4;
+    height /= 4;
+    var pieces = generatePieceData();
+
+    for(let i = 0;i < 16; i++){
+            let pieceElement = createPiece(width, height, pieces[i]);  
+            addPiece(pieceElement);
+    }
+
 }
 
-//6. 
+function generatePieceData() {
+    //Generamos una lista de piezas con su path y posición.
+    var pieces = [];
 
-// agregar celda/contorno.
-function addCell(element){
-	containerCell.appendChild(element);
+    for (let i = 0; i <16; i++){
+            let piece = {
+                image: "img/"+(i+1)+".jpg",
+                position: [i]
+            };
+            pieces.push(piece);
+        }
+        return pieces;
+    }
+    
+function createPiece(width, height, piece) {
+
+    var cellElement = document.createElement("div");
+    var pieceElement = document.createElement("img");
+    //Configutando la celda para la pieza
+    cellElement.style.width = width;
+    cellElement.style.height = height;
+
+
+    //Configurando la pieza dentro del contenedor peizas
+    pieceElement.width = width;
+    pieceElement.height = height;
+    pieceElement.style.border = "1px solid black";
+    pieceElement.src = piece.image;
+    pieceElement.onclick = clickPiece;
+    pieceElement.dataset.position=piece.position;
+    //Mandar la pieza dentro de la celda
+    cellElement.appendChild(pieceElement);
+
+    //Retornando el cellElement
+    return cellElement;
 }
 
-//agregar una pieza/ llena o con imagen.
-function addPiece(element){
-	containerPiece.appendChild(element);
+function addPiece(element) {
+    pieceContainer.appendChild(element);
 }
 
-function addPieceByPosition(element){
-	var position=element.dataset.position;
-	containerPiece.children[position].appendChild(element);
+
+//Pieces event
+function clickPiece(e) {
+    var piece = e.target;
+    selectedPiece = piece;
+}   
+
+//Cell event
+function clickCell(e) {
+    if(selectedPiece) {
+        let cell = e.target;
+        cell.appendChild(selectedPiece);
+    }else {
+        console.log("Seleccione una pieza.");
+    }
 }
 
-//cargas la imagen
-function generatePieceData(){
-	//generamos un alista de piezas
-	var pieces=[];
-	for(let i=0; i<16; i++){
-		let piece={image:"img/"+(i+1)+".jpg", position:i};
-		pieces.push(piece);
-	}
-	return pieces;
+function keyPress(ke){
+    console.log("pulsaste e");
+    if(ke.keyCode==101 || ke.keyCode == 69){
+        let result=evaluateBoard();
+        showDialog(result);
+    }
 }
 
-function clickPiece(e){
-	var piece=e.target;//accedo al elemento al hacer clic.
-	if (piece.dataset.moved=="true"){
-		verifyCell(piece.parentElement);
-	}
-	//piece.dataset.moved=true;
-	selectedPiece=piece;//asignar la variable a una que usaremos.
+function evaluateBoard(){
+    var cells=cellContainer.children;
+    for(cell of cells){
+        let piece = cell.children[0];
+        if(piece.dataset.position != cell.dataset.position){
+            return false;
+        }
+    }
+    return true;
 }
 
-function clickCell(e){
-	if(e.target.parentElement.dataset.fill=="true"){
-		if(selectedPiece){
-			let cell=e.target.parentElement;
-			verifyCell(cell);
-			selectedPiece=null;
-		}else{
-			console.log("Selecciona una pieza");
-		}
-	}else{
-		e.target.dataset.fill=true;
-		e.target.appendChild(selectedPiece);
-		selectedPiece=null;
-	}
+function showDialog(result){
+    var imgElement=dialogElement.children[0];
+    var textContent=dialogElement.children[1];
+    if(result){
+        //imgElement.src="img/imagenganastes.jpg";
+        textContent.innerText="Ganastes";
+    }else{
+        //img.src="img/imagenperdistes.jpg";
+        textContent.innerText="Perdistes";
+    }
+    //dialogElement.classList.add("dialog-show");
+    dialogElement.style.display="block";
+    returnPieces();
 }
 
-function verifyCell(element){
-	var fill=element.dataset.fill=="true";//crear una variable para que jale el fill que esta en el metodo de createCell.
-	if(fill){
-		let piece = element.children[0];
-		element.appendChild(selectedPiece);
-		addPieceByPosition(piece);
-	}else{
-		element.dataset.fill=true;
-		selectedPiece.dataset.moved=true;
-		element.appendChild(selectedPiece);
-	}
+function returnPieces(){
+    let cells = cellContainer.children;
+    let cellPieces= pieceContainer.children;
+    for(cell of cells){
+        let position=cell.dataset.position;
+        let piece=cell.children[0];
+        cellPieces[position].appendChild(piece);
+    }
 }
